@@ -1,0 +1,5 @@
+node_modules
+.env
+metro_backend/node_modules
+metro_backend/.env
+metro_backend/.gitignore
