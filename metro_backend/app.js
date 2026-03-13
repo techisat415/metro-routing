@@ -21,9 +21,6 @@ import userRouter from "./routes/user.route.js";
 
 //routes declaration
 app.use("/api/v1/users", userRouter);
-app.use("/api/v1/tasks", taskRouter);
-app.use("/api/v1/notes", noteRouter);
-app.use("/api/v1/subtasks", subTaskRouter);
 
 // http://localhost:4000/api/v1/users/register
 
