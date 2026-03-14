@@ -17,10 +17,9 @@ app.use(express.static('public')); //used for serving static files
 app.use(cookieParser()); //used for parsing cookies
 
 // routes
-import userRouter from "./routes/user.route.js";
+
 
 //routes declaration
-app.use("/api/v1/users", userRouter);
 
 // http://localhost:4000/api/v1/users/register
 
