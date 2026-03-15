@@ -23,7 +23,7 @@ app.get("/", (req, res) => {
 });
 
 //routes declaration
-
+app.use("/api/v1/routes", routeRouter);
 // http://localhost:4000/api/v1/users/register
 
 export default app;
