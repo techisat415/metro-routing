@@ -1,19 +1,19 @@
+import { metroGraph } from "../graph/metroGraph.js";
+import { dijkstra } from "../algorithms/dijkstra.js";
+
 const findRoute = async({startPoint, endPoint}) =>{
+
+    if (!metroGraph[startPoint] || !metroGraph[endPoint]) {
+        return null;
+    }
+
+    const result = dijkstra(metroGraph, startPoint, endPoint);
+
     return {
         startPoint,
         endPoint,
-        routes: [
-            {
-                path: ["Station A", "Station B", "Station C"],
-                travelTime: 15,
-                transfers: 0
-            },
-            {
-                path: ["Station A", "Station D", "Station C"],
-                travelTime: 18,
-                transfers: 1
-            }
-        ],
+        path: result.path,
+        travelTime: result.time,
         bestRoute: 0
     };
 }
