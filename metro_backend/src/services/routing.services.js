@@ -23,7 +23,7 @@ const findRoute = async({startPoint, endPoint}) =>{
         startPoint,
         endPoint,
         path: result.path,
-        travelTime: result.time,
+        travelTime: Math.round(result.time / 60),
         bestRoute: 0
     };
 }

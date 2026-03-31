@@ -4,6 +4,11 @@ import csv from 'csv-parser';
 const stopsMap = {};
 const graph = {};
 
+const timeToSeconds = (timeStr) => {
+    const [h, m, s] = timeStr.split(':').map(Number);
+    return h * 3600 + m * 60 + s;
+};
+
 const buildMetroGraph = async() => {
     console.log("Building metro graph...");
 
@@ -19,6 +24,7 @@ const buildMetroGraph = async() => {
 
     let prevTrip = null;
     let prevStop = null;
+    let prevDeparture = null;
 
     await new Promise((resolve) => {
         fs.createReadStream('src/data/gtfs/stop_times.csv')
@@ -27,21 +33,28 @@ const buildMetroGraph = async() => {
 
             const trip = row.trip_id;
             const stop = stopsMap[row.stop_id];
+            const arrival = timeToSeconds(row.arrival_time);
 
-            if (prevTrip === trip && prevStop && stop) {
+            if (prevTrip === trip && prevStop && stop && prevDeparture != null) {
 
-                graph[prevStop].push({
-                    station: stop,
-                    time: 2 // to be updated with actual time from stop_times.csv
-                });
+                const travelTime = arrival - prevDeparture;
 
-                graph[stop].push({
-                    station: prevStop,
-                    time: 2 // to be updated with actual time from stop_times.csv
-                });
+                if(travelTime > 0 && travelTime < 3600){
+                    graph[prevStop].push({
+                        station: stop,
+                        time: travelTime 
+                    });
+
+                    graph[stop].push({
+                        station: prevStop,
+                        time: travelTime 
+                    });
+                }
+                
             }
             prevTrip = trip;
             prevStop = stop;
+            prevDeparture = timeToSeconds(row.departure_time);
         })
         .on('end', resolve);
     });
