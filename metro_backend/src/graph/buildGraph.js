@@ -13,7 +13,7 @@ const buildMetroGraph = async() => {
     console.log("Building metro graph...");
 
     await new Promise((resolve) => {
-        fs.createReadStream('src/data/gtfs/stops.csv')
+        fs.createReadStream('src/data/gtfs/stops.txt')
         .pipe(csv())
         .on('data', (row) => {
             stopsMap[row.stop_id] = row.stop_name;
@@ -27,7 +27,7 @@ const buildMetroGraph = async() => {
     let prevDeparture = null;
 
     await new Promise((resolve) => {
-        fs.createReadStream('src/data/gtfs/stop_times.csv')
+        fs.createReadStream('src/data/gtfs/stop_times.txt')
         .pipe(csv())
         .on('data', (row) => {
 
