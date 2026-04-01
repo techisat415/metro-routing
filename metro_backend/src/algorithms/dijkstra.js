@@ -29,7 +29,10 @@ const dijkstra = (graph, start, end) => {
 
             if (newDist < distances[neighbor.station]) {
                 distances[neighbor.station] = newDist;
-                prev[neighbor.station] = closestNode;
+                prev[neighbor.station] = {
+                    station: closestNode,
+                    line: neighbor.line
+                };
             }
         }
     }
@@ -39,8 +42,14 @@ const dijkstra = (graph, start, end) => {
     let curr = end;
 
     while (curr) {
-        path.unshift(curr);
-        curr = prev[curr];
+        const prevNode = prev[curr];
+
+        path.unshift({
+            station: curr,
+            line: prevNode ? prevNode.line : null
+        });
+
+        curr = prevNode ? prevNode.station : null;
     }
 
     return {

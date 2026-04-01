@@ -3,6 +3,29 @@ import csv from 'csv-parser';
 
 const stopsMap = {};
 const graph = {};
+const tripToRoute = {};
+const routeIdToLine = {};
+
+await new Promise((resolve) => {
+    fs.createReadStream('src/data/gtfs/routes.txt')
+    .pipe(csv())
+    .on('data', (row) => {
+        const fullName = row.route_long_name || "";
+        const line = fullName.split("_")[0];
+
+        routeIdToLine[row.route_id] = line;
+    })
+    .on('end', resolve);
+});
+
+await new Promise((resolve) => {
+    fs.createReadStream('src/data/gtfs/trips.txt')
+    .pipe(csv())
+    .on('data', (row) => {
+        tripToRoute[row.trip_id] = row.route_id;
+    })
+    .on('end', resolve);
+});
 
 const timeToSeconds = (timeStr) => {
     const [h, m, s] = timeStr.split(':').map(Number);
@@ -34,6 +57,8 @@ const buildMetroGraph = async() => {
             const trip = row.trip_id;
             const stop = stopsMap[row.stop_id];
             const arrival = timeToSeconds(row.arrival_time);
+            const routeId = tripToRoute[trip];
+            const line = routeIdToLine[routeId];
 
             if (prevTrip === trip && prevStop && stop && prevDeparture != null) {
 
@@ -42,12 +67,14 @@ const buildMetroGraph = async() => {
                 if(travelTime > 0 && travelTime < 3600){
                     graph[prevStop].push({
                         station: stop,
-                        time: travelTime 
+                        time: travelTime,
+                        line: line
                     });
 
                     graph[stop].push({
                         station: prevStop,
-                        time: travelTime 
+                        time: travelTime,
+                        line: line
                     });
                 }
                 
