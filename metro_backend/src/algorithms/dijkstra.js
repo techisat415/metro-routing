@@ -1,8 +1,10 @@
-const dijkstra = (graph, start, end) => {
+const dijkstra = (graph, start, end, interchangeTimes) => {
 
     const distances = {};
     const prev = {};
     const visited = new Set();
+    const nodeLine = {};
+    nodeLine[start] = null;
 
     for (let node in graph) {
         distances[node] = Infinity;
@@ -25,14 +27,26 @@ const dijkstra = (graph, start, end) => {
         visited.add(closestNode);
 
         for (let neighbor of graph[closestNode]) {
-            const newDist = distances[closestNode] + neighbor.time;
+            let extraTime = 0;
+
+            const prevLine = nodeLine[closestNode];
+            const currLine = neighbor.line;
+
+            if (prevLine && currLine && prevLine !== currLine) {
+                extraTime = interchangeTimes[closestNode] || 300;
+            }
+
+            const newDist = distances[closestNode] + neighbor.time + extraTime;
 
             if (newDist < distances[neighbor.station]) {
                 distances[neighbor.station] = newDist;
+
                 prev[neighbor.station] = {
                     station: closestNode,
-                    line: neighbor.line
+                    line: currLine
                 };
+
+                nodeLine[neighbor.station] = currLine;
             }
         }
     }

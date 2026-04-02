@@ -1,12 +1,15 @@
 import { buildMetroGraph } from "../graph/buildGraph.js";
 import { dijkstra } from "../algorithms/dijkstra.js";
+import { loadInterchangeTimes } from "../utils/loadInterchangeTimes.js";
 
 let metroGraph = null;
-let interchanges = 0;
+// let interchanges = 0;
+let interchangeTimes = {};
 
-const initGraph = async() => {
-    if(!metroGraph){
+const initGraph = async () => {
+    if (!metroGraph) {
         metroGraph = await buildMetroGraph();
+        interchangeTimes = loadInterchangeTimes();
     }
 };
 
@@ -18,13 +21,20 @@ const findRoute = async({startPoint, endPoint}) =>{
         return null;
     }
 
-    const result = dijkstra(metroGraph, startPoint, endPoint);
+    const result = dijkstra(metroGraph, startPoint, endPoint, interchangeTimes);
 
-    for (let i = 1; i < result.path.length; i++){
-        if(result.path[i].line !== result.path[i-1].line){
-            if(result.path[i-1].line !== null){
-                interchanges++;
-            }
+    let interchanges = 0;
+
+    for (let i = 1; i < result.path.length; i++) {
+        const prevLine = result.path[i - 1].line;
+        const currLine = result.path[i].line;
+
+        // skip invalid cases
+        if (!prevLine || !currLine) continue;
+
+        // count only REAL line changes
+        if (prevLine !== currLine) {
+            interchanges++;
         }
     }
 
