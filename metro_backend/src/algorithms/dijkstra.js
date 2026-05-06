@@ -3,72 +3,97 @@ const dijkstra = (graph, start, end, interchangeTimes) => {
     const distances = {};
     const prev = {};
     const visited = new Set();
-    const nodeLine = {};
-    nodeLine[start] = null;
 
-    for (let node in graph) {
-        distances[node] = Infinity;
+    for (const neighbor of graph[start]) {
+
+        const stateKey = `${start}|${neighbor.line}`;
+
+        distances[stateKey] = 0;
+
+        prev[stateKey] = null;
     }
-    distances[start] = 0;
 
     while (true) {
-        let closestNode = null;
 
-        for (let node in distances) {
-            if (!visited.has(node) &&
-                (closestNode === null || distances[node] < distances[closestNode])) {
-                closestNode = node;
+        let closestState = null;
+
+        for (const state in distances) {
+
+            if (
+                !visited.has(state) &&
+                (
+                    closestState === null ||
+                    distances[state] < distances[closestState]
+                )
+            ) {
+                closestState = state;
             }
         }
 
-        if (closestNode === null) break;
-        if (closestNode === end) break;
+        if (closestState === null) break;
 
-        visited.add(closestNode);
+        visited.add(closestState);
 
-        for (let neighbor of graph[closestNode]) {
+        const [currentStation, currentLine] = closestState.split("|");
+
+        if (currentStation === end) {
+
+            const path = [];
+
+            let curr = closestState;
+
+            while (curr) {
+
+                const [station, line] = curr.split("|");
+
+                path.unshift({
+                    station,
+                    line
+                });
+
+                curr = prev[curr];
+            }
+
+            return {
+                path,
+                time: distances[closestState]
+            };
+        }
+
+        for (const neighbor of graph[currentStation]) {
+
+            const nextStation = neighbor.station;
+            const nextLine = neighbor.line;
+
             let extraTime = 0;
 
-            const prevLine = nodeLine[closestNode];
-            const currLine = neighbor.line;
-
-            if (prevLine && currLine && prevLine !== currLine) {
-                extraTime = interchangeTimes[closestNode] || 300;
+            // apply interchange penalty
+            if (currentLine !== nextLine) {
+                extraTime = interchangeTimes[currentStation] || 300;
             }
 
-            const newDist = distances[closestNode] + neighbor.time + extraTime;
+            const newDist =
+                distances[closestState] +
+                neighbor.time +
+                extraTime;
 
-            if (newDist < distances[neighbor.station]) {
-                distances[neighbor.station] = newDist;
+            const nextState = `${nextStation}|${nextLine}`;
 
-                prev[neighbor.station] = {
-                    station: closestNode,
-                    line: currLine
-                };
+            if (
+                distances[nextState] === undefined ||
+                newDist < distances[nextState]
+            ) {
 
-                nodeLine[neighbor.station] = currLine;
+                distances[nextState] = newDist;
+
+                prev[nextState] = closestState;
             }
         }
-    }
-
-    // reconstruct path
-    const path = [];
-    let curr = end;
-
-    while (curr) {
-        const prevNode = prev[curr];
-
-        path.unshift({
-            station: curr,
-            line: prevNode ? prevNode.line : null
-        });
-
-        curr = prevNode ? prevNode.station : null;
     }
 
     return {
-        path,
-        time: distances[end]
+        path: [],
+        time: Infinity
     };
 };
 

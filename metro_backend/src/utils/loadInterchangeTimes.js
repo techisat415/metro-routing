@@ -1,18 +1,31 @@
 import fs from "fs";
 
-const interchangeTimes = {};
+const loadInterchangeTimes = () => {
 
-export const loadInterchangeTimes = () => {
-    const data = fs.readFileSync("src/data/gtfs/interchange_times.txt", "utf-8");
+    const interchangeTimes = {};
 
-    data.split("\n").forEach(line => {
+    const data = fs.readFileSync(
+        "src/data/gtfs/interchange_times.txt",
+        "utf-8"
+    );
+
+    data.split("\n").forEach((line) => {
+
+        line = line.trim();
+
         if (!line || line.startsWith("#")) return;
 
-        const [station, time] = line.split("|");
+        const parts = line.split("|");
 
-        interchangeTimes[station.trim()] = Number(time.trim());
+        if (parts.length !== 2) return;
+
+        const station = parts[0].trim();
+        const time = Number(parts[1].trim());
+
+        interchangeTimes[station] = time;
     });
 
     return interchangeTimes;
 };
 
+export { loadInterchangeTimes };
