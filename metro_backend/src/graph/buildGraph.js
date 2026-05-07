@@ -1,31 +1,27 @@
-import fs from 'fs';
-import csv from 'csv-parser';
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const stopsMap = {};
 const graph = {};
 const tripToRoute = {};
 const routeIdToLine = {};
 
-await new Promise((resolve) => {
-    fs.createReadStream('src/data/gtfs/routes.txt')
-    .pipe(csv())
-    .on('data', (row) => {
-        const fullName = row.route_long_name || "";
-        const line = fullName.split("_")[0];
+const routes = await prisma.route.findMany();
 
-        routeIdToLine[row.route_id] = line;
-    })
-    .on('end', resolve);
-});
+for (const route of routes) {
 
-await new Promise((resolve) => {
-    fs.createReadStream('src/data/gtfs/trips.txt')
-    .pipe(csv())
-    .on('data', (row) => {
-        tripToRoute[row.trip_id] = row.route_id;
-    })
-    .on('end', resolve);
-});
+    const fullName = route.longName || "";
+    const line = fullName.split("_")[0];
+
+    routeIdToLine[route.routeId] = line;
+}
+
+const trips = await prisma.trip.findMany();
+
+for (const trip of trips) {
+    tripToRoute[trip.tripId] = trip.routeId;
+}
 
 const timeToSeconds = (timeStr) => {
     const [h, m, s] = timeStr.split(':').map(Number);
@@ -35,56 +31,58 @@ const timeToSeconds = (timeStr) => {
 const buildMetroGraph = async() => {
     console.log("Building metro graph...");
 
-    await new Promise((resolve) => {
-        fs.createReadStream('src/data/gtfs/stops.txt')
-        .pipe(csv())
-        .on('data', (row) => {
-            stopsMap[row.stop_id] = row.stop_name;
-            graph[row.stop_name] = [];
-        })
-        .on('end', resolve);
-    });
+    const stops = await prisma.stop.findMany();
+
+    for (const stop of stops) {
+
+        stopsMap[stop.stopId] = stop.stopName;
+        graph[stop.stopName] = [];
+    }
 
     let prevTrip = null;
     let prevStop = null;
     let prevDeparture = null;
 
-    await new Promise((resolve) => {
-        fs.createReadStream('src/data/gtfs/stop_times.txt')
-        .pipe(csv())
-        .on('data', (row) => {
-
-            const trip = row.trip_id;
-            const stop = stopsMap[row.stop_id];
-            const arrival = timeToSeconds(row.arrival_time);
-            const routeId = tripToRoute[trip];
-            const line = routeIdToLine[routeId];
-
-            if (prevTrip === trip && prevStop && stop && prevDeparture != null) {
-
-                const travelTime = arrival - prevDeparture;
-
-                if(travelTime > 0 && travelTime < 3600){
-                    graph[prevStop].push({
-                        station: stop,
-                        time: travelTime,
-                        line: line
-                    });
-
-                    graph[stop].push({
-                        station: prevStop,
-                        time: travelTime,
-                        line: line
-                    });
-                }
-                
-            }
-            prevTrip = trip;
-            prevStop = stop;
-            prevDeparture = timeToSeconds(row.departure_time);
-        })
-        .on('end', resolve);
+    const stopTimes = await prisma.stopTime.findMany({
+        orderBy: [
+            { tripId: 'asc' },
+            { stopSequence: 'asc' }
+        ]
     });
+
+    for (const row of stopTimes) {
+
+        const trip = row.tripId;
+        const stop = stopsMap[row.stopId];
+        const arrival = timeToSeconds(row.arrivalTime);
+
+        const routeId = tripToRoute[trip];
+        const line = routeIdToLine[routeId];
+
+        if (prevTrip === trip && prevStop && stop && prevDeparture != null) {
+
+            const travelTime = arrival - prevDeparture;
+
+            if (travelTime > 0 && travelTime < 3600) {
+
+                graph[prevStop].push({
+                    station: stop,
+                    time: travelTime,
+                    line: line
+                });
+
+                graph[stop].push({
+                    station: prevStop,
+                    time: travelTime,
+                    line: line
+                });
+            }
+        }
+        prevTrip = trip;
+        prevStop = stop;
+        prevDeparture = timeToSeconds(row.departureTime);
+    }
+
 
     console.log("Metro graph built successfully.");
 
