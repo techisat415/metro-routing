@@ -33,3 +33,26 @@ model Route {
   routeType       Int?
   routeColor      String?
 }
+
+model Trip {
+  id          Int    @id @default(autoincrement())
+
+  tripId      String @unique
+
+  routeId     String
+  serviceId   String?
+  shapeId     String?
+}
+
+model StopTime {
+  id              Int    @id @default(autoincrement())
+
+  tripId          String
+
+  arrivalTime     String
+  departureTime   String
+
+  stopId          String
+
+  stopSequence    Int
+}
