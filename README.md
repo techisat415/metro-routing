@@ -91,7 +91,7 @@ metro-route-planner/
 ## Get Shortest Route
 
 ```http
-GET /route?source=StationA&destination=StationB
+GET /routes?startPoint=StationA&endPoint=StationB
 ```
 
 ### Response
