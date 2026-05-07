@@ -12,9 +12,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Station {
-  id        Int    @id @default(autoincrement())
-  stationId String @unique
-  name      String
-  line      String
+model Stop {
+  id        Int     @id @default(autoincrement())
+
+  stopId    String  @unique
+  stopName  String
+
+  stopLat   Float
+  stopLon   Float
+}
+
+model Route {
+  id              Int    @id @default(autoincrement())
+
+  routeId         String @unique
+
+  shortName       String?
+  longName        String?
+
+  routeType       Int?
+  routeColor      String?
 }
