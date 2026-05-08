@@ -1,4 +1,5 @@
 import { useState } from "react";
+import AutocompleteInput from "./AutocompleteInput.jsx";
 
 function SearchForm({ setRouteData, setLoading, setError }) {
   const [from, setFrom] = useState("");
@@ -50,31 +51,25 @@ function SearchForm({ setRouteData, setLoading, setError }) {
           value={apiBase}
           onChange={(e) => setApiBase(e.target.value)}
         />
-      </div>
+        </div>
 
-      <div className="field">
-        <label>From</label>
-
-        <input
-          value={from}
-          onChange={(e) => setFrom(e.target.value)}
-          placeholder="Search station..."
+        <AutocompleteInput
+            label="From"
+            value={from}
+            onChange={setFrom}
+            placeholder="Search station..."
         />
-      </div>
 
-      <div className="field">
-        <label>To</label>
-
-        <input
-          value={to}
-          onChange={(e) => setTo(e.target.value)}
-          placeholder="Search station..."
+        <AutocompleteInput
+            label="To"
+            value={to}
+            onChange={setTo}
+            placeholder="Search station..."
         />
-      </div>
 
-      <button className="find-btn" onClick={fetchRoute}>
-        Find Route
-      </button>
+        <button className="find-btn" onClick={fetchRoute}>
+            Find Route
+        </button>
     </div>
   );
 }
