@@ -4,3 +4,6 @@ metro_backend/node_modules
 metro_backend/.env
 metro_backend/.gitignore
 metro_backend/src/data
+metro_frontend/node_modules
+metro_frontend/.env
+metro_frontend/src/data/*
