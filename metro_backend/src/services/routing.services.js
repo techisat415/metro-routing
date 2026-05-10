@@ -111,7 +111,8 @@ const findRoute = async({startPoint, endPoint}) =>{
     const minStationsResult = bfs(
         metroGraph,
         startPoint,
-        endPoint
+        endPoint,
+        interchangeTimes
     );
 
     return {
