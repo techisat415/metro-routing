@@ -1,12 +1,12 @@
 const calculateFare = (distance) => {
 
-    if (distance <= 2) return 10;
-    if (distance <= 5) return 20;
-    if (distance <= 12) return 30;
-    if (distance <= 21) return 40;
-    if (distance <= 32) return 50;
+    if (distance <= 2) return 11;
+    if (distance <= 5) return 21;
+    if (distance <= 12) return 32;
+    if (distance <= 21) return 43;
+    if (distance <= 32) return 54;
 
-    return 60;
+    return 64;
 };
 
 export { calculateFare };
