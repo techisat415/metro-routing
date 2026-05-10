@@ -21,58 +21,98 @@ const findRoute = async({startPoint, endPoint}) =>{
         return null;
     }
 
-    const result = dijkstra(metroGraph, startPoint, endPoint, interchangeTimes);
+    const routeResult = (result) => {
 
-    let interchanges = 0;
+        let interchanges = 0;
 
-    for (let i = 1; i < result.path.length; i++) {
-        const prevLine = result.path[i - 1].line;
-        const currLine = result.path[i].line;
+        for (let i = 1; i < result.path.length; i++) {
 
-        // skip invalid cases
-        if (!prevLine || !currLine) continue;
+            const prevLine = result.path[i - 1].line;
+            const currLine = result.path[i].line;
 
-        // count only REAL line changes
-        if (prevLine !== currLine) {
-            interchanges++;
+            if (!prevLine || !currLine) continue;
+
+            if (prevLine !== currLine) {
+                interchanges++;
+            }
         }
-    }
 
-    if (result.path.length > 1) {
-        result.path[0].line = result.path[1].line;
-    }
+        if (result.path.length > 1) {
+            result.path[0].line = result.path[1].line;
+        }
 
-    const segments = [];
-    let currentSegment = {
-        line: result.path[0].line,
-        stations: [result.path[0].station]
+        const segments = [];
+
+        let currentSegment = {
+            line: result.path[0].line,
+            stations: [result.path[0].station]
+        };
+
+        for (let i = 1; i < result.path.length; i++) {
+
+            const curr = result.path[i];
+            const prev = result.path[i - 1];
+
+            if (curr.line === prev.line) {
+
+                currentSegment.stations.push(curr.station);
+
+            } else {
+
+                segments.push(currentSegment);
+
+                currentSegment = {
+                    line: curr.line,
+                    stations: [prev.station, curr.station]
+                };
+            }
+        }
+
+        segments.push(currentSegment);
+
+        const linesUsed = new Set();
+
+        for (const node of result.path) {
+            if (node.line) {
+                linesUsed.add(node.line);
+            }
+}
+
+        return {
+            segments,
+            interchanges,
+            travelTime: result.time
+                ? Math.round(result.time / 60)
+                : null,
+
+            stationsCount: result.path.length - 1,
+            linesCount: linesUsed.size
+        };
     };
 
-    for(let i = 1; i < result.path.length; i++){
-        const curr = result.path[i];
-        const prev = result.path[i-1];
+    const fastestResult = dijkstra(
+        metroGraph,
+        startPoint,
+        endPoint,
+        interchangeTimes
+    );
 
-        if(curr.line === prev.line){
-            currentSegment.stations.push(curr.station);
-        } else {
-            segments.push(currentSegment);
-            currentSegment = {
-                line: curr.line,
-                stations: [prev.station, curr.station]
-            };
-        }
-    }
-    segments.push(currentSegment);
+    const minStationsResult = bfs(
+        metroGraph,
+        startPoint,
+        endPoint
+    );
 
     return {
         startPoint,
         endPoint,
-        segments: segments,
-        // path: result.path,
-        travelTime: Math.round(result.time / 60),
-        bestRoute: 0,
-        interchanges: interchanges,
+
+        fastest: routeResult(fastestResult),
+
+        minStations: routeResult(minStationsResult)
     };
+
+    
 }
 
 export {
