@@ -17,7 +17,11 @@ const initGraph = async () => {
 
 const findRoute = async({startPoint, endPoint}) =>{
 
-    await initGraph();
+    if (!metroGraph) {
+        return {
+            error: "Graph not initialized"
+        }
+    }
 
     if (!metroGraph[startPoint] || !metroGraph[endPoint]) {
         return null;
@@ -128,5 +132,6 @@ const findRoute = async({startPoint, endPoint}) =>{
 }
 
 export {
-    findRoute
+    findRoute,
+    initGraph
 }
