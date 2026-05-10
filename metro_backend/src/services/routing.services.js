@@ -1,6 +1,8 @@
 import { buildMetroGraph } from "../graph/buildGraph.js";
 import { dijkstra } from "../algorithms/dijkstra.js";
+import { bfs } from "../algorithms/bfs.js";
 import { loadInterchangeTimes } from "../utils/loadInterchangeTimes.js";
+import { calculateFare } from '../utils/calculateFare.js';
 
 let metroGraph = null;
 // let interchanges = 0;
@@ -24,6 +26,7 @@ const findRoute = async({startPoint, endPoint}) =>{
     const routeResult = (result) => {
 
         let interchanges = 0;
+        let totalDistance = 0;
 
         for (let i = 1; i < result.path.length; i++) {
 
@@ -66,6 +69,8 @@ const findRoute = async({startPoint, endPoint}) =>{
                     stations: [prev.station, curr.station]
                 };
             }
+
+            totalDistance += curr.distance || 0;
         }
 
         segments.push(currentSegment);
@@ -86,7 +91,9 @@ const findRoute = async({startPoint, endPoint}) =>{
                 : null,
 
             stationsCount: result.path.length - 1,
-            linesCount: linesUsed.size
+            linesCount: linesUsed.size,
+            fare: calculateFare(totalDistance),
+            distance: Number(totalDistance.toFixed(2))
         };
     };
 

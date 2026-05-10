@@ -28,6 +28,27 @@ const timeToSeconds = (timeStr) => {
     return h * 3600 + m * 60 + s;
 };
 
+const haversineDistance = (lat1, lon1, lat2, lon2) => {
+
+    const toRad = (deg) => deg * (Math.PI / 180);
+
+    const R = 6371;
+
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+        Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+};
+
 const buildMetroGraph = async() => {
     console.log("Building metro graph...");
 
@@ -35,7 +56,11 @@ const buildMetroGraph = async() => {
 
     for (const stop of stops) {
 
-        stopsMap[stop.stopId] = stop.stopName;
+        stopsMap[stop.stopId] = {
+            name: stop.stopName,
+            lat: stop.stopLat,
+            lon: stop.stopLon
+        };
         graph[stop.stopName] = [];
     }
 
@@ -53,7 +78,11 @@ const buildMetroGraph = async() => {
     for (const row of stopTimes) {
 
         const trip = row.tripId;
-        const stop = stopsMap[row.stopId];
+        const stopData = stopsMap[row.stopId];
+
+        if (!stopData) continue;
+
+        const stop = stopData.name;
         const arrival = timeToSeconds(row.arrivalTime);
 
         const routeId = tripToRoute[trip];
@@ -68,16 +97,31 @@ const buildMetroGraph = async() => {
                 graph[prevStop].push({
                     station: stop,
                     time: travelTime,
-                    line: line
+                    line: line,
+                    distance: distance
                 });
 
                 graph[stop].push({
                     station: prevStop,
                     time: travelTime,
-                    line: line
+                    line: line,
+                    distance: distance
                 });
             }
+
+            const prevStopData = Object.values(stopsMap)
+            .find(s => s.name === prevStop);
+
+            const currentStopData = stopData;
+
+            const distance = haversineDistance(
+                prevStopData.lat,
+                prevStopData.lon,
+                currentStopData.lat,
+                currentStopData.lon
+            );
         }
+
         prevTrip = trip;
         prevStop = stop;
         prevDeparture = timeToSeconds(row.departureTime);
