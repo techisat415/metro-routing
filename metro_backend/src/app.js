@@ -14,7 +14,6 @@ app.use(cors({
 app.use(express.json()); //used for parsing application/json
 // app.use(express.json({limit: "16kb"})); //used for parsing application/json
 app.use(express.urlencoded({ extended: true, limit: "16kb" })); //used for parsing application/x-www-form-urlencoded
-app.use(express.static('public')); //used for serving static files
 app.use(cookieParser()); //used for parsing cookies
 
 // routes
@@ -24,6 +23,7 @@ app.get("/", (req, res) => {
 
 //routes declaration
 app.use("/api/v1/routes", routeRouter);
+app.use(express.static('public')); //used for serving static files
 // http://localhost:4000/api/v1/users/register
 
 export default app;

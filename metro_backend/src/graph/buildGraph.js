@@ -92,6 +92,18 @@ const buildMetroGraph = async() => {
 
             const travelTime = arrival - prevDeparture;
 
+            const prevStopData = Object.values(stopsMap)
+            .find(s => s.name === prevStop);
+
+            const currentStopData = stopData;
+
+            const distance = haversineDistance(
+                prevStopData.lat,
+                prevStopData.lon,
+                currentStopData.lat,
+                currentStopData.lon
+            );
+
             if (travelTime > 0 && travelTime < 3600) {
 
                 graph[prevStop].push({
@@ -108,18 +120,6 @@ const buildMetroGraph = async() => {
                     distance: distance
                 });
             }
-
-            const prevStopData = Object.values(stopsMap)
-            .find(s => s.name === prevStop);
-
-            const currentStopData = stopData;
-
-            const distance = haversineDistance(
-                prevStopData.lat,
-                prevStopData.lon,
-                currentStopData.lat,
-                currentStopData.lon
-            );
         }
 
         prevTrip = trip;

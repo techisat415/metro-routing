@@ -4,6 +4,14 @@ const dijkstra = (graph, start, end, interchangeTimes) => {
     const prev = {};
     const visited = new Set();
 
+    for (const station in graph) {
+        for (const neighbor of graph[station]) {
+            const stateKey = `${station}|${neighbor.line}`;
+            distances[stateKey] = Infinity;
+            prev[stateKey] = null;
+        }
+    }
+
     for (const neighbor of graph[start]) {
 
         const stateKey = `${start}|${neighbor.line}`;
@@ -46,9 +54,19 @@ const dijkstra = (graph, start, end, interchangeTimes) => {
 
                 const [station, line] = curr.split("|");
 
+                const prevStation = prev[curr] ? prev[curr].split('|')[0] : null;
+                let distance = 0;
+                if (prevStation) {
+                    const edge = graph[prevStation].find(n => n.station === station && n.line === line);
+                    if (edge) {
+                        distance = edge.distance || 0;
+                    }
+                }
+
                 path.unshift({
                     station,
-                    line
+                    line,
+                    distance
                 });
 
                 curr = prev[curr];

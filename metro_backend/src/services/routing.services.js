@@ -25,6 +25,10 @@ const findRoute = async({startPoint, endPoint}) =>{
 
     const routeResult = (result) => {
 
+        if (!result || !result.path || result.path.length === 0) {
+            return null;
+        }
+
         let interchanges = 0;
         let totalDistance = 0;
 

@@ -9,8 +9,14 @@ const bfs = (graph, source, destination) => {
 
     queue.push({
         station: source,
-        path: [source],
-        interchanges: 0,
+
+        path: [
+            {
+                station: source,
+                line: null,
+                distance: 0
+            }
+        ],
         currentLine: null
     });
 
@@ -26,8 +32,7 @@ const bfs = (graph, source, destination) => {
 
             return {
                 path: current.path,
-                stationsCount: current.path.length - 1,
-                interchanges: current.interchanges
+                time: null
             };
         }
 
@@ -37,29 +42,29 @@ const bfs = (graph, source, destination) => {
             const nextLine = neighbor.line;
 
             if (!visited.has(nextStation)) {
-
-                let interchangeCount = current.interchanges;
-
-                if (
-                    current.currentLine &&
-                    current.currentLine !== nextLine
-                ) {
-                    interchangeCount++;
-                }
-
                 visited.add(nextStation);
 
                 queue.push({
                     station: nextStation,
-                    path: [...current.path, nextStation],
-                    interchanges: interchangeCount,
+
+                    path: [
+                        ...current.path,
+                        {
+                            station: nextStation,
+                            line: nextLine,
+                            distance: neighbor.distance || 0
+                        }
+                    ],
                     currentLine: nextLine
                 });
             }
         }
     }
 
-    return null;
+    return {
+        path: [],
+        time: null
+    };
 };
 
 export { bfs };
