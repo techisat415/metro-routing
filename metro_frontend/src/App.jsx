@@ -10,6 +10,7 @@ function App() {
   const [routeData, setRouteData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [routeType, setRouteType] = useState("fastest");
 
   return (
     <div className="app">
@@ -25,7 +26,13 @@ function App() {
 
       {error && <div className="error-msg show">{error}</div>}
 
-      {routeData && <ResultCard data={routeData} />}
+      {routeData && (
+        <ResultCard
+          data={routeData}
+          routeType={routeType}
+          setRouteType={setRouteType}
+        />
+      )}
     </div>
   );
 }
